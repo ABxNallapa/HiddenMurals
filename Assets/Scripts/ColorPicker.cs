@@ -6,7 +6,7 @@ public class ColorPicker : MonoBehaviour
 {
     public Color color;
 
-    void changeColor(Color color)
+    public void changeColor(Color color)
     {
         this.color = color;
     }

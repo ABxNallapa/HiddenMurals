@@ -45,6 +45,7 @@ public class ImageTaker : MonoBehaviour
         Debug.Log("Texture Width : " + width + " Texture Height : " + height);
         //Save the screenshot to disk
         byte[] byteArray = ss.EncodeToPNG();
+        print(byteArray.Length);
         string savePath = Application.dataPath + "/Materials/ScreenshotSave.png";
         System.IO.File.WriteAllBytes(savePath, byteArray);
         Debug.Log("Screenshot Path : " + savePath);

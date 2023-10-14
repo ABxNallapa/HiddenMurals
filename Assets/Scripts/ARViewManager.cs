@@ -450,7 +450,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 
             if (_anchor != null)
             {
-                Instantiate(CloudAnchorPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 90, 45));
+                Instantiate(CloudAnchorPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 45));
 
                 // Attach map quality indicator to this anchor.
                 var indicatorGO = Instantiate(MapQualityIndicatorPrefab, _anchor.transform);
@@ -610,7 +610,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             if (result.CloudAnchorState == CloudAnchorState.Success)
             {
                 OnAnchorResolvedFinished(true, cloudId);
-                Instantiate(CloudAnchorPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 90, 45));
+                Instantiate(CloudAnchorPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 45));
             }
             else
             {
