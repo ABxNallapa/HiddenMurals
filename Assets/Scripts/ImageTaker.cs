@@ -7,6 +7,7 @@ using UnityEngine.XR.Management;
 public class ImageTaker : MonoBehaviour
 {
     private API api;
+    private ImageConverter converter;
     //Object To Screenshot
     [SerializeField] private RectTransform _objToScreenshot;
     //Assign the button to take screenshot on clicking
@@ -15,6 +16,7 @@ public class ImageTaker : MonoBehaviour
     void Start()
     {
         api = new API();
+        converter = new ImageConverter();
         _takeScreenshotButton.onClick.AddListener(OnClickTakeScreenshotAndSaveButton);
     }
     private void OnClickTakeScreenshotAndSaveButton()
@@ -49,8 +51,7 @@ public class ImageTaker : MonoBehaviour
         Debug.Log("Screen Width : " + Screen.width + " Screen Height : " + Screen.height);
         Debug.Log("Texture Width : " + width + " Texture Height : " + height);
         //Save the screenshot to disk
-        byte[] byteArray = ss.EncodeToPNG();
-        string result = System.Convert.ToBase64String(byteArray);
+        string result = converter.Texture2dToString(ss);
         Destroy(ss);
         StartCoroutine(api.UpdateImage(State.locationId, result));
 
