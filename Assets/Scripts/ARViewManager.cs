@@ -102,6 +102,10 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 
         private AppManager appManager;
 
+        private API api;
+
+        private ImageConverter converter;
+
         /// <summary>
         /// Helper message for <see cref="NotTrackingReason.Initializing">.</see>
         /// </summary>
@@ -282,6 +286,9 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             _activeColor = SaveButton.GetComponentInChildren<Text>().color;
             _versionInfo = new AndroidJavaClass("android.os.Build$VERSION");
             appManager = GameObject.FindGameObjectWithTag("AppManager").GetComponent<AppManager>();
+
+            api = new API();
+            converter = new ImageConverter();
         }
 
         /// <summary>
@@ -636,7 +643,20 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             if (result.CloudAnchorState == CloudAnchorState.Success)
             {
                 OnAnchorResolvedFinished(true, cloudId);
-                Instantiate(DrawingPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 0));
+                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, result.Anchor.transform.position, result.Anchor.transform.rotation * Quaternion.Euler(90, 0, 0));
+                StartCoroutine(api.GetImg("Buckhead", (webRequest) => {
+                    if (webRequest.result == UnityEngine.Networking.UnityWebRequest.Result.Success) {
+                        string response = webRequest.downloadHandler.text.ToString();
+                        string data = response.Substring(10, response.Length - 10 - 3 - 1);
+
+                        Texture2D tex = converter.StringToTexture2d(data);
+                        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 1000);
+                        SpriteRenderer spriteRenderer = newDrawingPrefab.GetComponent<SpriteRenderer>();
+                        spriteRenderer.sprite = sprite;
+                    } else {
+                        Debug.LogError("Failed To Get Image.");
+                    }
+                }));
             }
             else
             {
@@ -652,6 +672,31 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                 Invoke("DoHideInstructionBar", 1.5f);
                 DebugText.text =
                     string.Format("Succeed to host the Cloud Anchor: {0}.", response);
+
+                // SAVE BLANK TEXTURE TO BIG QUERY
+
+                Texture2D source = Resources.Load("blank") as Texture2D;
+
+                RenderTexture renderTex = RenderTexture.GetTemporary(
+                    source.width,
+                    source.height,
+                    0,
+                    RenderTextureFormat.Default,
+                    RenderTextureReadWrite.Linear);
+
+                Graphics.Blit(source, renderTex);
+                RenderTexture previous = RenderTexture.active;
+                RenderTexture.active = renderTex;
+                Texture2D readableText = new Texture2D(source.width, source.height);
+                readableText.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
+                readableText.Apply();
+                RenderTexture.active = previous;
+                RenderTexture.ReleaseTemporary(renderTex);
+
+                Texture2D decompressedSource =  readableText;
+
+                string result = converter.Texture2dToString(decompressedSource);
+                StartCoroutine(api.CreateImage(_hostedCloudAnchor.Id, result));                    
 
                 // Display name panel and hide instruction bar.
                 NameField.text = _hostedCloudAnchor.Name;

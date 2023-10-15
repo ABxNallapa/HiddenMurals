@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
 using System.Text;
+using System;
 
 public class API
 {
@@ -16,11 +17,12 @@ public class API
     }
 
    private const string baseurl = "http://35.227.98.64:5000";
-   public IEnumerator GetImg(string locationId)
+   public IEnumerator GetImg(string locationId, Action<UnityEngine.Networking.UnityWebRequest> callback)
     {
-        using (UnityWebRequest webRequest = UnityWebRequest.Get(baseurl + "/retrieve" + locationId))
+        using (UnityWebRequest webRequest = UnityWebRequest.Get(baseurl + "/retrieve/" + locationId))
         {
             yield return webRequest.SendWebRequest();
+            callback(webRequest);
             Debug.Log(webRequest.result);
         }
     }
