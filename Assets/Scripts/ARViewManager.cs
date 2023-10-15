@@ -25,10 +25,12 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
     using System.Text.RegularExpressions;
     using UnityEngine;
     using UnityEngine.EventSystems;
+    using UnityEngine.SceneManagement;
     using UnityEngine.UI;
 
     using UnityEngine.XR.ARFoundation;
     using UnityEngine.XR.ARSubsystems;
+    using UnityEngine.XR.Management;
 
     /// <summary>
     /// A manager component that helps with hosting and resolving Cloud Anchors.
@@ -43,7 +45,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         /// <summary>
         /// The 3D object that represents a Cloud Anchor.
         /// </summary>
-        public GameObject CloudAnchorPrefab;
+        public GameObject DrawingPrefab;
 
         /// <summary>
         /// The game object that includes <see cref="MapQualityIndicator"/> to visualize
@@ -95,6 +97,10 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         /// The button to save current cloud anchor id into clipboard.
         /// </summary>
         public Button ShareButton;
+
+        public Button EditButton;
+
+        private AppManager appManager;
 
         /// <summary>
         /// Helper message for <see cref="NotTrackingReason.Initializing">.</see>
@@ -256,6 +262,17 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             DebugText.text = "Copied cloud id: " + _hostedCloudAnchor.Id;
         }
 
+        public void onEditButtonClicked()
+        {
+            Debug.LogError("Clicked");
+            EditButton.gameObject.SetActive(false);
+
+            // appManager.loadDrawScene();
+            Debug.LogError("Loading Draw Mode");
+            XRGeneralSettings.Instance.Manager.StopSubsystems();
+            SceneManager.LoadScene("DrawMode");
+        }
+
         /// <summary>
         /// The Unity Awake() method.
         /// </summary>
@@ -263,6 +280,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         {
             _activeColor = SaveButton.GetComponentInChildren<Text>().color;
             _versionInfo = new AndroidJavaClass("android.os.Build$VERSION");
+            appManager = GameObject.FindGameObjectWithTag("AppManager").GetComponent<AppManager>();
         }
 
         /// <summary>
@@ -285,6 +303,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             NamePanel.SetActive(false);
             InputFieldWarning.SetActive(false);
             ShareButton.gameObject.SetActive(false);
+            EditButton.gameObject.SetActive(false);
             UpdatePlaneVisibility(true);
 
             switch (Controller.Mode)
@@ -450,7 +469,13 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
 
             if (_anchor != null)
             {
-                Instantiate(CloudAnchorPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 45));
+                Texture2D loadTexture = Resources.Load("blank") as Texture2D;
+                Sprite sprite = Sprite.Create(loadTexture, new Rect(0, 0, loadTexture.width, loadTexture.height), new Vector2(0.5f, 0.5f), 1000);
+
+                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 0));
+
+                SpriteRenderer spriteRenderer = newDrawingPrefab.GetComponent<SpriteRenderer>();
+                spriteRenderer.sprite = sprite;
 
                 // Attach map quality indicator to this anchor.
                 var indicatorGO = Instantiate(MapQualityIndicatorPrefab, _anchor.transform);
@@ -610,7 +635,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             if (result.CloudAnchorState == CloudAnchorState.Success)
             {
                 OnAnchorResolvedFinished(true, cloudId);
-                Instantiate(CloudAnchorPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 45));
+                Instantiate(DrawingPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 0));
             }
             else
             {
@@ -647,6 +672,8 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                 InstructionText.text = "Resolve success!";
                 DebugText.text =
                     string.Format("Succeed to resolve the Cloud Anchor: {0}.", cloudId);
+                EditButton.gameObject.SetActive(true);
+                DebugText.gameObject.SetActive(false);
             }
             else
             {
