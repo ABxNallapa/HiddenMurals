@@ -416,6 +416,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             if (Controller.Mode == PersistentCloudAnchorsController.ApplicationMode.Resolving)
             {
                 ResolvingCloudAnchors();
+                UpdatePlaneVisibility(false);
             }
             else if (Controller.Mode == PersistentCloudAnchorsController.ApplicationMode.Hosting)
             {
@@ -480,7 +481,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                 Texture2D loadTexture = Resources.Load("blank") as Texture2D;
                 Sprite sprite = Sprite.Create(loadTexture, new Rect(0, 0, loadTexture.width, loadTexture.height), new Vector2(0.5f, 0.5f), 1000);
 
-                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 0));
+                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 190));
 
                 SpriteRenderer spriteRenderer = newDrawingPrefab.GetComponent<SpriteRenderer>();
                 spriteRenderer.sprite = sprite;
@@ -643,14 +644,31 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             if (result.CloudAnchorState == CloudAnchorState.Success)
             {
                 OnAnchorResolvedFinished(true, cloudId);
-                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, result.Anchor.transform.position, result.Anchor.transform.rotation * Quaternion.Euler(90, 0, 0));
+                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, result.Anchor.transform.position, result.Anchor.transform.rotation * Quaternion.Euler(90, 0, 190));
                 StartCoroutine(api.GetImg("Buckhead", (webRequest) => {
                     if (webRequest.result == UnityEngine.Networking.UnityWebRequest.Result.Success) {
                         string response = webRequest.downloadHandler.text.ToString();
                         string data = response.Substring(10, response.Length - 10 - 3 - 1);
 
                         Texture2D tex = converter.StringToTexture2d(data);
-                        Sprite sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, 1000);
+
+
+                        // TURN WHITE TO TRANSPRENT
+                        Texture2D newTexture = Instantiate(tex);
+                        for (int x = 0; x < newTexture.width; x++){
+                            for (int y = 0; y < newTexture.height; y++){
+                                // Get the color of the current pixel
+                                Color pixelColor = newTexture.GetPixel(x, y);
+                                // Check if the pixel is close to white (you can adjust the tolerance)
+                                if (pixelColor.r > 1 - 0.01f && pixelColor.g > 1 - 0.01f && pixelColor.b > 1 - 0.01f) {
+                                    // Set the pixel to be fully transparent
+                                    newTexture.SetPixel(x, y, Color.clear);
+                                }
+                            }
+                        }
+                        newTexture.Apply();
+
+                        Sprite sprite = Sprite.Create(newTexture, new Rect(0, 0, newTexture.width, newTexture.height), Vector2.one * 0.5f, 1000);
                         SpriteRenderer spriteRenderer = newDrawingPrefab.GetComponent<SpriteRenderer>();
                         spriteRenderer.sprite = sprite;
                     } else {
