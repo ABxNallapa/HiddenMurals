@@ -1,6 +1,8 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.XR.Management;
 
 public class ImageTaker : MonoBehaviour
 {
@@ -44,11 +46,16 @@ public class ImageTaker : MonoBehaviour
         Debug.Log("Screen Width : " + Screen.width + " Screen Height : " + Screen.height);
         Debug.Log("Texture Width : " + width + " Texture Height : " + height);
         //Save the screenshot to disk
-        byte[] byteArray = ss.EncodeToPNG();
-        string savePath = Application.dataPath + "/Materials/ScreenshotSave.png";
-        System.IO.File.WriteAllBytes(savePath, byteArray);
-        Debug.Log("Screenshot Path : " + savePath);
+        // byte[] byteArray = ss.EncodeToPNG();
+        // string savePath = Application.dataPath + "/Materials/ScreenshotSave.png";
+        // System.IO.File.WriteAllBytes(savePath, byteArray);
+        // Debug.Log("Screenshot Path : " + savePath);
+
         // Destroy texture to avoid memory leaks
         Destroy(ss);
+
+        Debug.Log("Changing Scenes to ARMode");
+        XRGeneralSettings.Instance.Manager.StartSubsystems();
+        SceneManager.LoadScene("ARMode");
     }
 }
