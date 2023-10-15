@@ -11,6 +11,7 @@ public class ImageTaker : MonoBehaviour
     [SerializeField] private RectTransform _objToScreenshot;
     //Assign the button to take screenshot on clicking
     [SerializeField] private Button _takeScreenshotButton;
+
     void Start()
     {
         api = new API();
@@ -48,16 +49,16 @@ public class ImageTaker : MonoBehaviour
         Debug.Log("Screen Width : " + Screen.width + " Screen Height : " + Screen.height);
         Debug.Log("Texture Width : " + width + " Texture Height : " + height);
         //Save the screenshot to disk
-        // byte[] byteArray = ss.EncodeToPNG();
-        // string savePath = Application.dataPath + "/Materials/ScreenshotSave.png";
-        // System.IO.File.WriteAllBytes(savePath, byteArray);
-        // Debug.Log("Screenshot Path : " + savePath);
+        byte[] byteArray = ss.EncodeToPNG();
+        string result = System.Convert.ToBase64String(byteArray);
+        Destroy(ss);
+        StartCoroutine(api.UpdateImage(State.locationId, result));
 
         // Destroy texture to avoid memory leaks
-        Destroy(ss);
+        
 
-        Debug.Log("Changing Scenes to ARMode");
-        XRGeneralSettings.Instance.Manager.StartSubsystems();
-        SceneManager.LoadScene("ARMode");
+        //Debug.Log("Changing Scenes to ARMode");
+        //XRGeneralSettings.Instance.Manager.StartSubsystems();
+        //SceneManager.LoadScene("ARMode");
     }
 }
