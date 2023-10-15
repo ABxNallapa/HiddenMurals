@@ -56,6 +56,7 @@ public class ImageTaker : MonoBehaviour
 
         Debug.Log("Changing Scenes to ARMode");
         XRGeneralSettings.Instance.Manager.StartSubsystems();
+        Screen.orientation = ScreenOrientation.Portrait;
         SceneManager.LoadScene("ARMode");
     }
 }

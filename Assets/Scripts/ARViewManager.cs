@@ -270,6 +270,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             // appManager.loadDrawScene();
             Debug.LogError("Loading Draw Mode");
             XRGeneralSettings.Instance.Manager.StopSubsystems();
+            Screen.orientation = ScreenOrientation.LandscapeLeft;
             SceneManager.LoadScene("DrawMode");
         }
 
