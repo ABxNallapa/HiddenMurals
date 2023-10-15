@@ -4,12 +4,14 @@ using UnityEngine.UI;
 
 public class ImageTaker : MonoBehaviour
 {
+    private API api;
     //Object To Screenshot
     [SerializeField] private RectTransform _objToScreenshot;
     //Assign the button to take screenshot on clicking
     [SerializeField] private Button _takeScreenshotButton;
     void Start()
     {
+        api = new API();
         _takeScreenshotButton.onClick.AddListener(OnClickTakeScreenshotAndSaveButton);
     }
     private void OnClickTakeScreenshotAndSaveButton()
