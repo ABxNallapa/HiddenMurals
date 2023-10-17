@@ -27,11 +27,12 @@ public class API
         }
     }
    
-   public IEnumerator GetAllLocations()
+   public IEnumerator GetAllLocations(Action<UnityEngine.Networking.UnityWebRequest> callback)
     {
         using (UnityWebRequest webRequest = UnityWebRequest.Get(baseurl + "/retrieveall"))
         {
             yield return webRequest.SendWebRequest();
+            callback(webRequest);
             Debug.Log(webRequest.result);
         }
     }

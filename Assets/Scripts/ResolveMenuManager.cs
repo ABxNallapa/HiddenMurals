@@ -67,6 +67,8 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         /// </summary>
         private Color _activeColor;
 
+        private API api;
+
         /// <summary>
         /// Callback handling the validation of the input field.
         /// </summary>
@@ -133,6 +135,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
         public void Awake()
         {
             _activeColor = ResolveButton.GetComponent<Image>().color;
+            api = new API();
         }
 
         /// <summary>
@@ -143,17 +146,32 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             SetButtonActive(ResolveButton, false);
             InvalidInputWarning.SetActive(false);
             InputField.text = string.Empty;
-            _history = Controller.LoadCloudAnchorHistory();
+            // _history = Controller.LoadCloudAnchorHistory();
 
-            Multiselection.OnValueChanged += OnResolvingSelectionChanged;
-            var options = new List<MultiselectionDropdown.OptionData>();
-            foreach (var data in _history.Collection)
-            {
-                options.Add(new MultiselectionDropdown.OptionData(
-                    data.Name, FormatDateTime(data.CreatedTime)));
-            }
+            StartCoroutine(api.GetAllLocations((webRequest) => {
+                if (webRequest.result == UnityEngine.Networking.UnityWebRequest.Result.Success) {
+                    string response = webRequest.downloadHandler.text.ToString();
+                    AllAnchorData allAnchorData = JsonUtility.FromJson<AllAnchorData>("{\"data\":" + response + "}");
+                    _history = new CloudAnchorHistoryCollection();
 
-            Multiselection.Options = options;
+                    for (int i = 0; i < allAnchorData.data.Length; i++) {
+                        string anchorId = allAnchorData.data[i].location_id;
+                        _history.Collection.Add(new CloudAnchorHistory(anchorId.Substring(0, Math.Min(10, anchorId.Length)), anchorId, DateTime.Now));
+                    }
+
+                    Multiselection.OnValueChanged += OnResolvingSelectionChanged;
+                    var options = new List<MultiselectionDropdown.OptionData>();
+                    foreach (var data in _history.Collection)
+                    {
+                        options.Add(new MultiselectionDropdown.OptionData(
+                            data.Name, FormatDateTime(data.CreatedTime)));
+                    }
+
+                    Multiselection.Options = options;
+                } else {
+                    Debug.LogError("Failed To Get Image.");
+                }
+            }));
         }
 
         /// <summary>
@@ -180,4 +198,17 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             button.enabled = active;
         }
     }
+
+    [Serializable]
+    public class AnchorData
+    {
+        public string location_id;
+    }
+
+    [Serializable]
+    public class AllAnchorData
+    {
+        public AnchorData[] data;
+    }
 }
+

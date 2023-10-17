@@ -481,7 +481,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
                 Texture2D loadTexture = Resources.Load("blank") as Texture2D;
                 Sprite sprite = Sprite.Create(loadTexture, new Rect(0, 0, loadTexture.width, loadTexture.height), new Vector2(0.5f, 0.5f), 1000);
 
-                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 190));
+                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, _anchor.transform.position, _anchor.transform.rotation * Quaternion.Euler(90, 0, 10));
 
                 SpriteRenderer spriteRenderer = newDrawingPrefab.GetComponent<SpriteRenderer>();
                 spriteRenderer.sprite = sprite;
@@ -644,7 +644,7 @@ namespace Google.XR.ARCoreExtensions.Samples.PersistentCloudAnchors
             if (result.CloudAnchorState == CloudAnchorState.Success)
             {
                 OnAnchorResolvedFinished(true, cloudId);
-                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, result.Anchor.transform.position, result.Anchor.transform.rotation * Quaternion.Euler(90, 0, 190));
+                GameObject newDrawingPrefab = Instantiate(DrawingPrefab, result.Anchor.transform.position, result.Anchor.transform.rotation * Quaternion.Euler(90, 0, 10));
                 StartCoroutine(api.GetImg("Buckhead", (webRequest) => {
                     if (webRequest.result == UnityEngine.Networking.UnityWebRequest.Result.Success) {
                         string response = webRequest.downloadHandler.text.ToString();
